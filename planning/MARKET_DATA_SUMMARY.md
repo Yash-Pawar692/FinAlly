@@ -44,18 +44,19 @@ MarketDataSource (ABC)
 
 ## Test Suite
 
-**73 tests, all passing.** 6 test modules in `backend/tests/market/`.
+**84 tests, all passing.** 7 test modules in `backend/tests/market/`.
 
 | Module | Tests | Coverage |
 |--------|-------|----------|
 | test_models.py | 11 | models.py: 100% |
-| test_cache.py | 13 | cache.py: 100% |
-| test_simulator.py | 17 | simulator.py: 98% |
+| test_cache.py | 14 | cache.py: 100% (incl. a multi-thread concurrency test) |
+| test_simulator.py | 20 | simulator.py: 98% (incl. the full 10-ticker default watchlist) |
 | test_simulator_source.py | 10 | (integration tests) |
 | test_factory.py | 7 | factory.py: 100% |
 | test_massive.py | 13 | massive_client.py: 56% (expected — API methods mocked) |
+| test_stream.py | 9 | stream.py: covers `_generate_events` and `create_stream_router` without a live ASGI server |
 
-Overall coverage: 84%.
+`stream.py` previously had no dedicated tests (31% coverage, flagged as a gap in `MARKET_DATA_REVIEW.md` §4.2). `test_stream.py` closes that gap by driving `_generate_events` directly against a minimal fake `Request` (only `is_disconnected()` and `.client.host` are needed), which avoids adding an `httpx`/ASGI-test-client dependency. This also surfaced and fixed a real bug: `create_stream_router` previously registered its route on a shared module-level `APIRouter`, so calling it more than once (e.g. once per test) would double-register the `/prices` route — it now creates a fresh `APIRouter` per call.
 
 ## Code Review & Fixes Applied
 
