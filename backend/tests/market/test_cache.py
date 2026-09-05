@@ -1,5 +1,7 @@
 """Tests for PriceCache."""
 
+from concurrent.futures import ThreadPoolExecutor
+
 from app.market.cache import PriceCache
 
 
@@ -101,3 +103,23 @@ class TestPriceCache:
         cache = PriceCache()
         update = cache.update("AAPL", 190.12345)
         assert update.price == 190.12
+
+    def test_concurrent_updates_are_thread_safe(self):
+        """Many threads hammering update() simultaneously should not lose
+        writes, corrupt state, or raise — the lock must actually serialize
+        access to the shared dict and version counter."""
+        cache = PriceCache()
+        tickers = [f"T{i}" for i in range(10)]
+        updates_per_ticker = 200
+
+        def hammer(ticker: str) -> None:
+            for i in range(updates_per_ticker):
+                cache.update(ticker, 100.0 + i)
+
+        with ThreadPoolExecutor(max_workers=len(tickers)) as pool:
+            pool.map(hammer, tickers)
+
+        assert len(cache) == len(tickers)
+        assert cache.version == len(tickers) * updates_per_ticker
+        for ticker in tickers:
+            assert cache.get_price(ticker) == 100.0 + updates_per_ticker - 1

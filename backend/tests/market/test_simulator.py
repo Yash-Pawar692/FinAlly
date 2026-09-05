@@ -129,3 +129,19 @@ class TestGBMSimulator:
         if '.' in price_str:
             decimal_part = price_str.split('.')[1]
             assert len(decimal_part) <= 2
+
+    def test_full_default_watchlist_cholesky_succeeds(self):
+        """The Cholesky decomposition must succeed for the full 10-ticker
+        default watchlist, mixing tech, finance, and TSLA correlations
+        into one matrix — not just the 1-2 ticker cases exercised above."""
+        tickers = list(SEED_PRICES.keys())
+        assert len(tickers) == 10
+
+        sim = GBMSimulator(tickers=tickers)
+        assert sim._cholesky is not None
+        assert sim._cholesky.shape == (10, 10)
+
+        for _ in range(100):
+            prices = sim.step()
+            assert set(prices.keys()) == set(tickers)
+            assert all(p > 0 for p in prices.values())
