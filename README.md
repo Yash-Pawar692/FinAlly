@@ -30,12 +30,19 @@ Single Docker container serving everything on port 8000:
 cp .env.example .env
 # Add your OPENROUTER_API_KEY to .env
 
-# Run with Docker
-docker build -t finally .
-docker run -v finally-data:/app/db -p 8000:8000 --env-file .env finally
+# macOS/Linux
+./scripts/start_mac.sh
+
+# Windows (PowerShell)
+./scripts/start_windows.ps1
 
 # Open http://localhost:8000
 ```
+
+The scripts are thin wrappers around `docker compose up -d` (pass `--build` /
+`-Build` to force a rebuild) — see `docker-compose.yml` for the build context,
+port mapping, `./db` bind mount, and `.env` wiring. `scripts/stop_mac.sh` /
+`scripts/stop_windows.ps1` stop the container; your data in `./db` persists.
 
 ## Environment Variables
 

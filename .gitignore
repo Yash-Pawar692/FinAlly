@@ -61,6 +61,25 @@ local_settings.py
 db.sqlite3
 db.sqlite3-journal
 
+# FinAlly runtime SQLite database (bind-mounted at db/, see PLAN.md §11)
+db/finally.db
+db/finally.db-journal
+db/finally.db-wal
+db/finally.db-shm
+
+# Running the backend locally from backend/ (cwd != repo root) resolves the
+# default relative DB_PATH to backend/db/finally.db instead of the top-level
+# db/ — harmless local dev data, never meant to be committed.
+backend/db/
+
+# FinAlly frontend static export, copied into backend/static by the Docker build
+backend/static/
+
+# FinAlly Playwright E2E test runtime artifacts
+test/node_modules/
+test/playwright-report/
+test/test-results/
+
 # Flask stuff:
 instance/
 .webassets-cache

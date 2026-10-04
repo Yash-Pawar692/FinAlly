@@ -1,0 +1,26 @@
+name: finally-e2e
+
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    environment:
+      - LLM_MOCK=true
+    ports:
+      - "8000:8000"
+
+  playwright:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      app:
+        condition: service_healthy
+    environment:
+      - BASE_URL=http://app:8000
+    volumes:
+      # Docker-outside-of-Docker: lets the SSE resilience test restart the
+      # sibling `app` container via the host engine (PLAN.md §12).
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./playwright-report:/test/playwright-report
