@@ -140,5 +140,4 @@ class TestCreateStreamRouter:
         router = create_stream_router(cache)
 
         route = next(r for r in router.routes if r.path == "/api/stream/prices")
-        # Starlette auto-adds HEAD alongside GET; no other verbs should be present.
-        assert route.methods == {"GET", "HEAD"}
+        assert route.methods == {"GET"}
